@@ -327,6 +327,78 @@
 - **変更関数**: `geocodeAddress()` （lines 3708-3777）
 - **効果**: 日本の住所検索精度が大幅に向上、エラー時の対処が明確に
 
+#### 21. GitHubリポジトリ作成と初回アップロード
+- **目的**: バージョン管理とデプロイメントの準備
+- **作業内容**:
+  1. **`.gitignore` ファイル作成**:
+     - OS生成ファイル (.DS_Store, Thumbs.db)
+     - エディタ設定 (.vscode/, .idea/)
+     - 一時ファイル (*.tmp, *.log)
+     - バックアップファイル (*.bak)
+     - 環境設定ファイル (.env)
+  2. **README.md の全面改訂**:
+     - 概要、機能一覧、クイックスタート手順
+     - 技術スタック、プロジェクト構造
+     - 使用方法、バージョン履歴
+     - 外部API一覧と制約事項
+  3. **Gitリポジトリの初期化**:
+     - `git init`
+     - `git branch -M main`
+     - `git add .`
+     - `git commit -m "Initial commit: re:leaf v1.3.0"`
+  4. **GitHubへのプッシュ**:
+     - リモートリポジトリ: `https://github.com/codextokyo2025/tree-management.git`
+     - パブリック設定、個人利用ライセンス
+- **ステータス**: ✅ 完了
+
+#### 22. AWS Lightsailへのデプロイ
+- **デプロイ環境**:
+  - プラットフォーム: AWS Lightsail
+  - OS: Ubuntu
+  - Webサーバー: Nginx
+  - IPアドレス: 52.197.124.181
+  - ポート: 8080（既存アプリと共存）
+- **作業内容**:
+  1. **ファイアウォール設定**:
+     - IPv4ファイアウォールにポート8080を追加
+     - プロトコル: TCP
+     - 送信元: 任意のIPv4アドレス
+  2. **GitHubからのクローン**:
+     - `cd /var/www/`
+     - `sudo git clone https://github.com/codextokyo2025/tree-management.git`
+  3. **権限設定**:
+     - `sudo chown -R www-data:www-data /var/www/tree-management`
+     - `sudo chmod -R 755 /var/www/tree-management`
+  4. **Nginx設定ファイル作成** (`/etc/nginx/sites-available/tree-management`):
+     ```nginx
+     server {
+         listen 8080;
+         server_name _;
+         root /var/www/tree-management/map;
+         index index.html;
+         location / {
+             try_files $uri $uri/ =404;
+         }
+         location /data/ {
+             alias /var/www/tree-management/data/;
+         }
+     }
+     ```
+  5. **設定の有効化と再起動**:
+     - `sudo ln -s /etc/nginx/sites-available/tree-management /etc/nginx/sites-enabled/`
+     - `sudo nginx -t` (設定テスト)
+     - `sudo systemctl restart nginx`
+- **アクセスURL**: `http://52.197.124.181:8080/`
+- **認証**: なし（テスト環境のため）
+- **運用方法**: 既存アプリ（ポート80）と別ポート運用で共存
+- **更新手順**:
+  ```bash
+  cd /var/www/tree-management
+  sudo git pull
+  sudo systemctl reload nginx
+  ```
+- **ステータス**: ✅ 完了（動作確認済み）
+
 ---
 
 ## 技術的な変更点まとめ
@@ -384,10 +456,14 @@ tree-management/
 - [x] UI要素の整理（ズーム調整パネル削除等）
 - [x] レイヤー設定の凡例表示（浸水深、地質図、色別標高図）
 - [x] レイヤーチェックボックスの状態保持
-- [x] 右側パネルのポリゴンタブカウント自動更新
+- [x] ポリゴンタブカウント自動更新
 - [x] 住所入力からポイント追加機能（カテゴリ対応）
 - [x] ジオコーディング機能改善（国土地理院API追加）
 - [x] 作業履歴ドキュメント（本ファイル）
+- [x] .gitignoreファイル作成
+- [x] README.md全面改訂
+- [x] GitHubリポジトリ作成とアップロード
+- [x] AWS Lightsailへのデプロイ（ポート8080）
 
 ### 未実装項目
 - [ ] 気温・降水量レイヤー（要APIキー：OpenWeatherMap）
@@ -422,7 +498,8 @@ tree-management/
 
 - **最終更新日**: 2026年2月19日
 - **バージョン**: 1.3.0
-- **ステータス**: 開発中（Phase 5完成：レイヤー凡例、UI改善、住所検索機能強化）
+- **ステータス**: 本番デプロイ完了（Phase 6完成：GitHub版管理、AWS Lightsailデプロイ）
+- **デプロイURL**: http://52.197.124.181:8080/
 
 ---
 
